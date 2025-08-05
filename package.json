@@ -1,0 +1,24 @@
+{
+  "name": "chirpyts",
+  "version": "1.0.0",
+  "description": "## Async TypeScript - JS servers are typically single-threaded - Still handles many requests at once via async event loop. - It's only an issue with CPU-intensive work because event loop clogged",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm run start"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
