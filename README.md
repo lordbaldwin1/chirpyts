@@ -45,3 +45,83 @@ app.listen(PORT, () => {
 `app.listen` starts the server and listens for incoming connections on the specified port.
 - `index.html` is so common that express automatically serves it from the root directory `/` instead of `/index.html` route.
 - Standard file servers map the path to a file on disk to the URL path.
+
+## Custom Handlers
+```TS
+(req: Request, res: Response) => Promise<void>;
+```
+This is the typical signature of an HTTP handler in Express.
+
+## JSON
+
+Decode JSON Request Body
+
+We can manually read this body using Node.js streams.
+- Initialize a string buffer
+- Listen for 'data' events
+- Listen for 'end' events
+
+```TS
+async function handler(req: Request, res: Response) {
+  let body = ""; // 1. Initialize
+
+  // 2. Listen for data events
+  req.on("data", (chunk) => {
+    body += chunk;
+  });
+
+  // 3. Listen for end events
+  req.on("end", () => {
+    try {
+      const parsedBody = JSON.parse(body);
+      // now you can use `parsedBody` as a JavaScript object
+      // ...
+    } catch (error) {
+      res.status(400).send("Invalid JSON");
+    }
+  });
+}
+```
+
+Encode JSON Response Body
+
+Just stringify the JS object and use the res.send() method
+```TS
+async function handler(req: Request, res: Response) {
+  type responseData = {
+    createdAt: string;
+    ID: number;
+  };
+
+  const respBody: responseData = {
+    createdAt: new Date().toISOString(),
+    ID: 123,
+  };
+
+  res.header("Content-Type", "application/json");
+  const body = JSON.stringify(respBody);
+  res.status(200).send(body);
+  res.end();
+}
+```
+
+## JSON Middleware
+```TS
+app.use(express.json());
+```
+Using this, Express will automatically:
+- Check if `Content-Type` header is set to `application/json`
+- Parse the request into `req.body`
+- Handle errors for malformed JSON
+So instead of the hell we experiences before req.on('data',....):
+```TS
+async function handler(req: Request, res: Response) {
+  type parameters = {
+    body: string;
+  };
+
+  // req.body is automatically parsed
+  const params: parameters = req.body;
+  // ...
+}
+```
