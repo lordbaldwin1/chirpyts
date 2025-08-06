@@ -125,3 +125,58 @@ async function handler(req: Request, res: Response) {
   // ...
 }
 ```
+
+## Useful response functions:
+```TS
+import type { Response } from "express";
+
+export function respondWithError(res: Response, code: number, message: string) {
+  respondWithJSON(res, code, { error: message });
+}
+
+export function respondWithJSON(res: Response, code: number, payload: any) {
+  res.header("Content-Type", "application/json");
+  const body = JSON.stringify(payload);
+  res.status(code).send(body);
+  res.end();
+}
+```
+
+## Error-Handling Middleware in Express
+Has four parameters `(err, req, res, next)`
+- Synchronous errors (thrown in your route handlers) automatically skip normal middleware and go straight to this error handler.
+- Asynchronous errors (in async functions) must be caught or passed to next(err) so they can also be handled here.
+
+YOU MUST DEFINE ERROR HANDLING MIDDLEWARE LAST AFTER OTHER `app.use()` and routes.
+```TS
+function errorHandler(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  console.error("Uh oh, spaghetti-o");
+  res.status(500).json({
+    error: "Boots has fallen",
+  });
+}
+
+app.use(errorHandler);
+```
+
+In Express 4, unhandled async errors don't automatically go to the error handler, you need to:
+```TS
+app.post("/api", async (req, res, next) => {
+  try {
+    await handler(req, res);
+  } catch (err) {
+    next(err); // Pass the error to Express
+  }
+});
+```
+Or you can use promises with `.catch(next)`
+```TS
+app.post("/api", (req, res, next) => {
+  Promise.resolve(handler(req, res)).catch(next);
+});
+```

@@ -19,6 +19,8 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "drizzle-orm": "^0.44.4",
+    "express": "^5.1.0",
+    "postgres": "^3.4.7"
   }
 }
