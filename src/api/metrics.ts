@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { config } from "../config.js";
+import { deleteAllUsers } from "../db/queries/users.js";
+import { ForbiddenError } from "./errors.js";
 
 export async function handlerReadiness(_: Request, res: Response) {
   res.set("Content-Type", "text/plain; charset=utf-8");
@@ -13,7 +15,7 @@ export async function handlerMetrics(_: Request, res: Response) {
   <html>
     <body>
       <h1>Welcome, Chirpy Admin</h1>
-      <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+      <p>Chirpy has been visited ${config.api.fileServerHits} times!</p>
     </body>
   </html>
   `);
@@ -21,9 +23,21 @@ export async function handlerMetrics(_: Request, res: Response) {
 }
 
 export async function handlerReset(_: Request, res: Response) {
-  config.fileserverHits = 0;
-  res.write("Hits reset to 0");
+  if (config.api.platform !== "dev") {
+    throw new ForbiddenError("Cannot reset metrics outside of dev environment");
+  }
+
+  type resParams = {
+    hitCount: number;
+    deletedUsers: number;
+  };
+  config.api.fileServerHits = 0;
+  const result = await deleteAllUsers();
+
+  const body: resParams = {
+    hitCount: config.api.fileServerHits,
+    deletedUsers: result.count,
+  };
+  res.status(200).send(body);
   res.end();
 }
-
-
