@@ -184,3 +184,10 @@ app.post("/api", (req, res, next) => {
 ## Drizzle
 `$onUpdate` sets the field to a default value whenever the row is updated
 `$inferInsert` is a helper type that infers the type of the object you would pass to the insert function.
+
+## Authentication w/ Password
+- check `auth.ts` file
+
+## JWT notes
+Using jsonwebtoken library
+- `jwt.sign(payload, secret, [options])` to make a JWT
