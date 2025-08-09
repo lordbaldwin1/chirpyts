@@ -191,3 +191,7 @@ app.post("/api", (req, res, next) => {
 ## JWT notes
 Using jsonwebtoken library
 - `jwt.sign(payload, secret, [options])` to make a JWT
+
+## MORE EXPRESS NOTES
+- you don't even need to set content type or JSON.stringify your objects
+- express just does this automatically for us when res.send(object). WHAT THE HECK!? TY EXPRESS

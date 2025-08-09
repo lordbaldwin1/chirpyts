@@ -1,5 +1,42 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { makeJWT, validateJWT } from "../auth.js";
+import { checkPasswordHash, hashPassword, makeJWT, validateJWT } from "../auth.js";
+
+describe("Password Hashing", () => {
+  const password1 = "correctPassword123!";
+  const password2 = "anotherPassword456!";
+  let hash1: string;
+  let hash2: string;
+
+  beforeAll(async () => {
+    hash1 = await hashPassword(password1);
+    hash2 = await hashPassword(password2);
+  });
+
+  it("should return true for the correct password", async () => {
+    const result = await checkPasswordHash(password1, hash1);
+    expect(result).toBe(true);
+  });
+
+  it("should return false for an incorrect password", async () => {
+    const result = await checkPasswordHash("wrongPassword", hash1);
+    expect(result).toBe(false);
+  });
+
+  it("should return false when password doesn't match a different hash", async () => {
+    const result = await checkPasswordHash(password1, hash2);
+    expect(result).toBe(false);
+  });
+
+  it("should return false for an empty password", async () => {
+    const result = await checkPasswordHash("", hash1);
+    expect(result).toBe(false);
+  });
+
+  it("should return false for an invalid hash", async () => {
+    const result = await checkPasswordHash(password1, "invalidhash");
+    expect(result).toBe(false);
+  });
+});
 
 describe("JWT Creation and Validation", () => {
   const secret = "abc123";
@@ -11,9 +48,9 @@ describe("JWT Creation and Validation", () => {
   let jwt2: string;
   let jwt3: string;
   beforeAll(async () => {
-    jwt1 = makeJWT(userID1, 10, secret);
-    jwt2 = makeJWT(userID2, 10, secret);
-    jwt3 = makeJWT(userID2, 0, secret);
+    jwt1 = makeJWT(userID1, secret, 10);
+    jwt2 = makeJWT(userID2, secret, 10);
+    jwt3 = makeJWT(userID2, secret, 0);
   });
 
   it("should return correct userID for jwt+secret", () => {
@@ -36,3 +73,5 @@ describe("JWT Creation and Validation", () => {
     }, 100);
   });
 });
+
+// uhhh test getAPIKey func...if you want to?

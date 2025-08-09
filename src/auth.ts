@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { BadRequestError, UnauthorizedError } from "./api/errors.js";
+import { Request } from "express";
+import { randomBytes } from "node:crypto";
 
+const ONE_HOUR = 60*60;
 const TOKEN_ISSUER = "chirpy";
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 
@@ -13,13 +16,14 @@ export async function checkPasswordHash(password: string, hash: string) {
   return await bcrypt.compare(password, hash);
 }
 
-export function makeJWT(userID: string, expiresIn: number, secret: string) {
+export function makeJWT(userID: string, secret: string, expiresIn?: number) {
+  const expirationTime = expiresIn ? expiresIn : ONE_HOUR;
   const timeInSeconds = Math.floor(Date.now() / 1000);
   const payload: payload = {
     iss: "chirpy",
     sub: userID,
     iat: timeInSeconds,
-    exp: timeInSeconds + expiresIn,
+    exp: timeInSeconds + expirationTime,
   }
   return jwt.sign(payload, secret);
 }
@@ -43,12 +47,25 @@ export function validateJWT(tokenString: string, secret: string) {
   return decoded.sub;
 }
 
+export function makeRefreshToken() {
+  return randomBytes(32).toString('hex');
+}
+
 export function getBearerToken(req: Request) {
-  const header = req.headers.get("Authorization");
+  const header = req.get("Authorization");
   if (!header) {
-    throw new BadRequestError("Bearer token missing from request");
+    throw new UnauthorizedError("Malformed header");
   }
 
+  const splitAuthHeader = header.split(" ");
+  return splitAuthHeader[1];
+}
+
+export function getAPIKey(req: Request) {
+  const header = req.get("Authorization");
+  if (!header) {
+    throw new UnauthorizedError("HA, YOU THOUGHT!")
+  }
   const splitAuthHeader = header.split(" ");
   return splitAuthHeader[1];
 }
