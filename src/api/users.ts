@@ -34,6 +34,7 @@ export async function handlerLogin(req: Request, res: Response) {
   type Parameters = {
     email: string,
     password: string,
+    expiresInSeconds?: number,
   };
   
   const params: Parameters = req.body;

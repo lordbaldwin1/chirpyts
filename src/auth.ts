@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
-import { UnauthorizedError } from "./api/errors.js";
+import { BadRequestError, UnauthorizedError } from "./api/errors.js";
 
 const TOKEN_ISSUER = "chirpy";
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
@@ -41,4 +41,14 @@ export function validateJWT(tokenString: string, secret: string) {
   }
 
   return decoded.sub;
+}
+
+export function getBearerToken(req: Request) {
+  const header = req.headers.get("Authorization");
+  if (!header) {
+    throw new BadRequestError("Bearer token missing from request");
+  }
+
+  const splitAuthHeader = header.split(" ");
+  return splitAuthHeader[1];
 }
